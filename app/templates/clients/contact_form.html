@@ -131,7 +131,7 @@
                         <div class="flex items-start">
                             <div class="flex items-center h-5">
                                 <input type="checkbox" name="brands" value="{{ value }}" 
-                                       {% if value in form.brands.data %}checked{% endif %}
+                                       {% if form.brands.data and value in form.brands.data %}checked{% endif %}
                                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
                             </div>
                             <div class="ml-3 text-sm">

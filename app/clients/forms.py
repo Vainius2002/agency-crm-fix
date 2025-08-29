@@ -85,7 +85,8 @@ class ClientContactForm(FlaskForm):
         super(ClientContactForm, self).__init__(*args, **kwargs)
         self.contact = contact
         from app.models import Brand
-        self.brands.choices = [(b.id, f"{b.name} ({b.company.name})") for b in Brand.query.join(Company).order_by(Company.name, Brand.name).all()]
+        brands = Brand.query.outerjoin(Company).order_by(Company.name, Brand.name).all()
+        self.brands.choices = [(b.id, f"{b.name} ({b.company.name if b.company else 'No Company'})") for b in brands]
     
     def validate_email(self, email):
         query = ClientContact.query.filter_by(email=email.data)
