@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_cors import CORS
 from config import Config
 
 db = SQLAlchemy()
@@ -12,6 +13,15 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     config_class.init_app(app)
+    
+    # Enable CORS for API endpoints
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:5003", "http://172.20.89.236:5003"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "X-API-Key"]
+        }
+    })
     
     db.init_app(app)
     migrate.init_app(app, db)
@@ -30,5 +40,8 @@ def create_app(config_class=Config):
     
     from app.dashboard import bp as dashboard_bp
     app.register_blueprint(dashboard_bp, url_prefix='/')
+    
+    from app.api import bp as api_bp
+    app.register_blueprint(api_bp, url_prefix='/api')
     
     return app
