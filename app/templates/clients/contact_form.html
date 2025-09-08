@@ -95,6 +95,17 @@
             </div>
 
             <div>
+                {{ form.contact_type.label(class="block text-sm font-medium text-gray-700") }}
+                <div class="mt-1">
+                    {{ form.contact_type(class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm") }}
+                    {% if form.contact_type.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.contact_type.errors[0] }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Specify whether this is a client contact, agency partner, or media representative</p>
+                </div>
+            </div>
+
+            <div>
                 {{ form.status.label(class="block text-sm font-medium text-gray-700") }}
                 <div class="mt-1">
                     {{ form.status(class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm") }}

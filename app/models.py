@@ -113,6 +113,7 @@ class ClientContact(db.Model):
     responsibility_description = db.Column(db.Text)
     should_get_gift = db.Column(db.Boolean, default=False)
     receive_newsletter = db.Column(db.Boolean, default=False)
+    contact_type = db.Column(db.String(20), default='client')  # client, partner, media
     status = db.Column(db.String(20), default='active')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

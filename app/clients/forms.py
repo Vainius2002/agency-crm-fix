@@ -76,6 +76,9 @@ class ClientContactForm(FlaskForm):
     responsibility_description = TextAreaField('Responsibility Description', validators=[Optional()])
     should_get_gift = BooleanField('Should Get Gift')
     receive_newsletter = BooleanField('Receive Newsletter')
+    contact_type = SelectField('Contact Type', choices=[
+        ('client', 'Client'), ('partner', 'Partner'), ('media', 'Media')
+    ], validators=[DataRequired()], default='client')
     status = SelectField('Status', choices=[('active', 'Active'), ('passive', 'Passive')], 
                         validators=[DataRequired()])
     brands = MultiCheckboxField('Associated Brands', coerce=int)

@@ -55,11 +55,26 @@
         <table class="min-w-full divide-y divide-gray-200" id="brandsTable">
             <thead class="bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brand / Company</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Key Person</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Level</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Update</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" 
+                        onclick="sortTable('brand')" data-sort="brand">
+                        Brand / Company <i class="fas fa-sort ml-1 text-gray-400"></i>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" 
+                        onclick="sortTable('person')" data-sort="person">
+                        Key Person <i class="fas fa-sort ml-1 text-gray-400"></i>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" 
+                        onclick="sortTable('risk')" data-sort="risk">
+                        Risk Level <i class="fas fa-sort ml-1 text-gray-400"></i>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" 
+                        onclick="sortTable('date')" data-sort="date">
+                        Last Update <i class="fas fa-sort ml-1 text-gray-400"></i>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" 
+                        onclick="sortTable('status')" data-sort="status">
+                        Status <i class="fas fa-sort ml-1 text-gray-400"></i>
+                    </th>
                     <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
                 </tr>
             </thead>
@@ -72,7 +87,11 @@
                     data-company-name="{{ brand.company.name|lower }}"
                     data-subbrands="{% for subbrand in brand.subbrands %}{{ subbrand.name|lower }} {% endfor %}"
                     data-key-person="{% if key_person %}{{ key_person.team_member.first_name }} {{ key_person.team_member.last_name }}{% endif %}"
-                    data-update-date="{% if latest_update %}{{ latest_update.date.isoformat() }}{% else %}1900-01-01{% endif %}">
+                    data-update-date="{% if latest_update %}{{ latest_update.date.isoformat() }}{% else %}1900-01-01{% endif %}"
+                    data-risk-level="{% if latest_update %}{{ latest_update.evaluation }}{% else %}none{% endif %}"
+                    data-status="{{ brand.status }}"
+                    data-brand-sort="{{ brand.name|lower }}"
+                    data-person-sort="{% if key_person %}{{ key_person.team_member.last_name|lower }} {{ key_person.team_member.first_name|lower }}{% else %}zzzz{% endif %}">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div>
                             <div class="text-sm font-medium text-gray-900">{{ brand.name }}</div>
@@ -153,6 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const tableBody = document.querySelector('#brandsTable tbody');
     const rows = Array.from(document.querySelectorAll('.brand-row'));
     
+    // Sorting state
+    let currentSort = { column: null, direction: 'asc' };
+    
     function filterAndSortBrands() {
         const searchTerm = searchInput.value.toLowerCase();
         const selectedKeyPerson = keyPersonSelect.value;
@@ -209,6 +231,83 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         } else if (noResultsRow) {
             noResultsRow.remove();
+        }
+    }
+    
+    // Column sorting function
+    window.sortTable = function(column) {
+        // Toggle sort direction
+        if (currentSort.column === column) {
+            currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSort.column = column;
+            currentSort.direction = 'asc';
+        }
+        
+        // Update header icons
+        updateSortIcons();
+        
+        // Sort rows
+        const sortedRows = [...rows].sort((a, b) => {
+            let valueA, valueB;
+            
+            switch (column) {
+                case 'brand':
+                    valueA = a.getAttribute('data-brand-sort');
+                    valueB = b.getAttribute('data-brand-sort');
+                    break;
+                case 'person':
+                    valueA = a.getAttribute('data-person-sort');
+                    valueB = b.getAttribute('data-person-sort');
+                    break;
+                case 'risk':
+                    const riskOrder = { 'perfect': 1, 'medium': 2, 'risk': 3, 'none': 4 };
+                    valueA = riskOrder[a.getAttribute('data-risk-level')] || 4;
+                    valueB = riskOrder[b.getAttribute('data-risk-level')] || 4;
+                    break;
+                case 'date':
+                    valueA = a.getAttribute('data-update-date');
+                    valueB = b.getAttribute('data-update-date');
+                    break;
+                case 'status':
+                    valueA = a.getAttribute('data-status');
+                    valueB = b.getAttribute('data-status');
+                    break;
+            }
+            
+            // Compare values
+            let comparison = 0;
+            if (column === 'risk') {
+                comparison = valueA - valueB; // Numeric comparison for risk
+            } else {
+                comparison = valueA < valueB ? -1 : (valueA > valueB ? 1 : 0);
+            }
+            
+            return currentSort.direction === 'asc' ? comparison : -comparison;
+        });
+        
+        // Reorder rows in the table
+        sortedRows.forEach(row => {
+            tableBody.appendChild(row);
+        });
+        
+        // Apply current filters after sorting
+        filterAndSortBrands();
+    };
+    
+    function updateSortIcons() {
+        // Reset all sort icons
+        document.querySelectorAll('th[data-sort] i').forEach(icon => {
+            icon.className = 'fas fa-sort ml-1 text-gray-400';
+        });
+        
+        // Update current column icon
+        if (currentSort.column) {
+            const currentHeader = document.querySelector(`th[data-sort="${currentSort.column}"] i`);
+            if (currentHeader) {
+                const iconClass = currentSort.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+                currentHeader.className = `fas ${iconClass} ml-1 text-indigo-600`;
+            }
         }
     }
     

@@ -17,12 +17,22 @@
 
 <div class="mt-6">
     <form method="GET" action="{{ url_for('clients.contacts') }}" class="bg-white p-4 rounded-lg shadow">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
             <div>
                 <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
                 <input type="text" id="search" name="search" value="{{ search_query }}" 
                        placeholder="Name, email, or phone..."
                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+            
+            <div>
+                <label for="contact_type" class="block text-sm font-medium text-gray-700">Contact Type</label>
+                <select id="contact_type" name="contact_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">All Types</option>
+                    <option value="client" {% if selected_contact_type == 'client' %}selected{% endif %}>Client</option>
+                    <option value="partner" {% if selected_contact_type == 'partner' %}selected{% endif %}>Partner</option>
+                    <option value="media" {% if selected_contact_type == 'media' %}selected{% endif %}>Media</option>
+                </select>
             </div>
             
             <div>
@@ -53,7 +63,7 @@
                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                     <i class="fas fa-search mr-2"></i> Search
                 </button>
-                {% if search_query or selected_brand_id or selected_company_id %}
+                {% if search_query or selected_contact_type or selected_brand_id or selected_company_id %}
                 <a href="{{ url_for('clients.contacts') }}" class="inline-flex items-center px-4 py-2 text-sm text-gray-500 hover:text-gray-700">
                     Clear
                 </a>
@@ -69,6 +79,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Brands</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Responsibility</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
@@ -97,6 +108,25 @@
                                 </div>
                             </div>
                         </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if contact.contact_type == 'client' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-user mr-1"></i> Client
+                            </span>
+                        {% elif contact.contact_type == 'partner' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-handshake mr-1"></i> Partner
+                            </span>
+                        {% elif contact.contact_type == 'media' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <i class="fas fa-broadcast-tower mr-1"></i> Media
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-user mr-1"></i> Client
+                            </span>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4">
                         <div class="flex flex-wrap gap-1 max-w-xs">
@@ -160,7 +190,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No contacts found. Create your first contact to get started.</td>
+                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">No contacts found. Create your first contact to get started.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -173,12 +203,12 @@
 <div class="mt-6 px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
     <div class="flex-1 flex justify-between sm:hidden">
         {% if pagination.has_prev %}
-        <a href="{{ url_for('clients.contacts', page=pagination.prev_num, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        <a href="{{ url_for('clients.contacts', page=pagination.prev_num, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
             Previous
         </a>
         {% endif %}
         {% if pagination.has_next %}
-        <a href="{{ url_for('clients.contacts', page=pagination.next_num, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+        <a href="{{ url_for('clients.contacts', page=pagination.next_num, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
             Next
         </a>
         {% endif %}
@@ -198,11 +228,11 @@
         <div>
             <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 {% if pagination.has_prev %}
-                <a href="{{ url_for('clients.contacts', page=1, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <a href="{{ url_for('clients.contacts', page=1, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <span class="sr-only">First</span>
                     <i class="fas fa-angle-double-left"></i>
                 </a>
-                <a href="{{ url_for('clients.contacts', page=pagination.prev_num, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <a href="{{ url_for('clients.contacts', page=pagination.prev_num, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <span class="sr-only">Previous</span>
                     <i class="fas fa-angle-left"></i>
                 </a>
@@ -211,7 +241,7 @@
                 {% for page_num in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
                     {% if page_num %}
                         {% if page_num != pagination.page %}
-                            <a href="{{ url_for('clients.contacts', page=page_num, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            <a href="{{ url_for('clients.contacts', page=page_num, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
                                 {{ page_num }}
                             </a>
                         {% else %}
@@ -225,11 +255,11 @@
                 {% endfor %}
                 
                 {% if pagination.has_next %}
-                <a href="{{ url_for('clients.contacts', page=pagination.next_num, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <a href="{{ url_for('clients.contacts', page=pagination.next_num, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <span class="sr-only">Next</span>
                     <i class="fas fa-angle-right"></i>
                 </a>
-                <a href="{{ url_for('clients.contacts', page=pagination.pages, search=search_query, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                <a href="{{ url_for('clients.contacts', page=pagination.pages, search=search_query, contact_type=selected_contact_type, brand_id=selected_brand_id, company_id=selected_company_id) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                     <span class="sr-only">Last</span>
                     <i class="fas fa-angle-double-right"></i>
                 </a>

@@ -369,6 +369,7 @@ def contacts():
     # Get filter parameters
     brand_id = request.args.get('brand_id', type=int)
     company_id = request.args.get('company_id', type=int)
+    contact_type = request.args.get('contact_type', '').strip()
     search = request.args.get('search', '').strip()
     page = request.args.get('page', 1, type=int)
     per_page = 50
@@ -377,6 +378,8 @@ def contacts():
     query = ClientContact.query
     
     # Apply filters
+    if contact_type:
+        query = query.filter(ClientContact.contact_type == contact_type)
     if brand_id:
         query = query.join(ClientContact.brands).filter(Brand.id == brand_id)
     if company_id:
@@ -406,6 +409,7 @@ def contacts():
                          pagination=pagination,
                          selected_brand_id=brand_id,
                          selected_company_id=company_id,
+                         selected_contact_type=contact_type,
                          search_query=search)
 
 @bp.route('/contact/new', methods=['GET', 'POST'])
@@ -431,6 +435,7 @@ def new_contact(brand_id=None):
             responsibility_description=form.responsibility_description.data,
             should_get_gift=form.should_get_gift.data,
             receive_newsletter=form.receive_newsletter.data,
+            contact_type=form.contact_type.data,
             status=form.status.data
         )
         
@@ -473,6 +478,7 @@ def edit_contact(contact_id):
         contact.responsibility_description = form.responsibility_description.data
         contact.should_get_gift = form.should_get_gift.data
         contact.receive_newsletter = form.receive_newsletter.data
+        contact.contact_type = form.contact_type.data
         contact.status = form.status.data
         
         contact.brands.clear()
